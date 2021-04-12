@@ -1,0 +1,12 @@
+name: systemd_http_health_check
+version: 0.1.0
+authors:
+  - Jonne Haß <me@jhass.eu>
+description: A companion daemon to notify systemd about the health of a HTTP server
+crystal: 1.0
+license: BSD-3-Clause
+libraries:
+  libsystemd: "*"
+targets:
+  systemd_http_health_check:
+    main: src/systemd_http_health_check.cr
