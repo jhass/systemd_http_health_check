@@ -1,7 +1,7 @@
 require "socket"
 require "http/client"
 
-@[Link(pkg_config: "libsystemd")]
+@[Link("systemd", pkg_config: "libsystemd")]
 lib LibSystemd
   fun sd_notify(unset_env : LibC::Int, message : LibC::Char*)
 end
