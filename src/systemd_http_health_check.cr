@@ -20,7 +20,7 @@ end
 
 def up?
   response = HTTP::Client.get ENDPOINT
-  response.success?
+  SUCCESS_CODES.includes? response.status_code
 rescue e
   warn "Failed to poll HTTP endpoint at '#{ENDPOINT}': #{e.message}"
   false
@@ -46,12 +46,26 @@ def watchdog
   sd_notify "WATCHDOG=trigger"
 end
 
+def parse_success_codes(codes)
+  codes.split(",").flat_map {|code_or_range| parse_success_code(code_or_range) }
+rescue e
+  warn "Couldn'T parse HTTP_SUCCESS_CODES: #{e.message}, using default of 200-299"
+  [*200..299]
+end
+
+def parse_success_code(code_or_range)
+  return code_or_range.to_i unless code_or_range.includes? '-'
+  start_code, end_code = code_or_range.split('-')
+  [*start_code.to_i..end_code.to_i]
+end
+
 usage unless 0 < ARGV.size <= 2
 usage unless ARGV.size == 1 || !ARGV[1].to_i?.nil?
 abort "NOTIFY_SOCKET is empty, running with Type=notify under systemd?" unless ENV.has_key?("NOTIFY_SOCKET")
 
 ENDPOINT = ARGV[0]
 INTERVAL = (ARGV[1]? || 60).to_i.seconds
+SUCCESS_CODES = parse_success_codes ENV.fetch("HTTP_SUCCESS_CODES", "200-299")
 
 notify_ready
 watchdog
